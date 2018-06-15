@@ -25,9 +25,11 @@
     "content_scripts": [
         {
             "matches": [
-                "http://git.dianpingoa.com/*/browse"
+                "*://git.dianpingoa.com/*/browse*",
+                "*://git.dianpingoa.com/*/browse"
             ],
             "js": [
+                "insert.js",
                 "./static/index.js"
             ],
             "css": [

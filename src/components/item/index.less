@@ -1,0 +1,47 @@
+.layer{
+    font-size: 16px;
+
+    .item{
+        position: relative;
+        padding-left: 24px;
+    }
+    .arrow{
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        display: inline-block;
+        vertical-align: top;
+
+        &::after{
+            content: "\25BE";
+            transform: rotate(-90deg);
+            width: 24px;
+            line-height: inherit;
+            text-align: center;
+            display: inline-block;
+            vertical-align: top;
+        }
+        &.open{
+            &::after{
+                transform: rotate(0deg);
+            }
+        }
+    }
+    .floder{
+        display: inline-block;
+        line-height: 20px;
+        padding-left: 24px;
+        background: url(../../assets/imgs/folder.png) top left no-repeat;
+        background-size: contain;
+    }
+    .file{
+        display: inline-block;
+        line-height: 20px;
+        padding-left: 24px;
+        background: url(../../assets/imgs/file.png) top left no-repeat;
+        background-size: contain;
+    }
+}
