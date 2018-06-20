@@ -3,7 +3,7 @@
     <!--
     <Item></Item>
     -->
-    <Item v-if="!!treeList" :treeList="treeList" class="tree"></Item>
+    <Item v-if="!!treeList" class="tree" :treeList="treeList" :urlParmas="urlParmas"></Item>
 </div>
 </template>
 
@@ -19,10 +19,12 @@ export default {
     data(){
         return{
             treeList: null,
-            host: "//git.dianpingoa.com/rest/api/2.0/",
-            dynamicUrl: location.href.split('?')[0].split('/').slice(5,10).join('/'),  //接口url中动态部分
-            path: urlParams.path,
-            branch: urlParams.branch || "master",
+            urlParmas: {
+                dynamicUrl: location.href.split('?')[0].split('/').slice(5,10).join('/'),  //接口url中动态部分
+                path: urlParams.path,
+                branch: urlParams.branch || "master",
+                host: "//git.dianpingoa.com/rest/api/2.0/",
+            },
             json: '',
             cleanList: [{
 
@@ -34,20 +36,38 @@ export default {
     },
     mounted(){
         this.init()
-        // let arrDirectroy = [],
-        //     arrFile = [],
-        //     originArr = dataObj.data.children.values
-        // for(let i=0; i<originArr.length; i++){
-        //     originArr[i].open = false
-        //     originArr[i].type === "DIRECTORY" ? arrDirectroy.push(originArr[i]) : arrFile.push(originArr[i])
-        // }
-        // dataObj.data.children.values = arrDirectroy.concat(arrFile)
-        // this.treeList = dataObj.data
-        // console.log("this.treeList", this.treeList)
     },
     methods: {
         init(){
-            this.getGitList()
+            this.getFirstList()
+            // this.getGitList()
+        },
+        getFirstList: async function(){
+            let rootObj = {},
+                url = `${this.urlParmas.host}${this.urlParmas.dynamicUrl}/?at=${this.urlParmas.branch}&start=0&limit=5000`,
+                arrDirectroy = [],
+                arrFile = [],
+                originArr
+
+            let childrenRes = await fetch(url, {
+                credentials: 'include'
+            })
+
+            let childrenJson = await childrenRes.json()
+
+            originArr = childrenJson.children.values
+
+            for(let i=0; i<originArr.length; i++){
+                originArr[i].open = false
+                originArr[i].isLoaded = false
+                originArr[i].isLoading = false
+                originArr[i].parent = childrenJson.path.toString
+                originArr[i].type === "DIRECTORY" ? arrDirectroy.push(originArr[i]) : arrFile.push(originArr[i])
+            }
+
+            childrenJson.children.values = arrDirectroy.concat(arrFile)
+
+            this.treeList = childrenJson
         },
         /*
         * 广度遍历，获取每个数据
@@ -81,7 +101,7 @@ export default {
                     // url根据目录进行改变，当parent（自己设计）为空时，那么就是根目录，否则为正常遍历目录
                     item.parent == '' ? this.path = item.path.toString : this.path = `${item.parent}/${item.path.toString}`
                     
-                    url = `${this.host}${this.dynamicUrl}/${this.path}?at=${this.branch}&start=0&limit=5000`
+                    let url = `${this.host}${this.dynamicUrl}/${this.path}?at=${this.branch}&start=0&limit=5000`
                     console.log("url", url)
                     //获取当前目录数据
                     let childrenRes = await fetch(url, {
@@ -95,7 +115,7 @@ export default {
                         item.children = childrenJson
                     }else{
                         // 根目录的时候
-                        rootObj = childrenJson
+                        
                         let arrDirectroy = [],
                             arrFile = [],
                             originArr = childrenJson.children.values
@@ -103,6 +123,7 @@ export default {
                             originArr[i].type === "DIRECTORY" ? arrDirectroy.push(originArr[i]) : arrFile.push(originArr[i])
                         }
                         childrenJson.children.values = arrDirectroy.concat(arrFile)
+                        rootObj = childrenJson
                     }
                     // 获取子节点
                     let children = childrenJson.children.values 
@@ -112,6 +133,7 @@ export default {
                         // 标志位，为了获取当前文件夹的访问url
                         children[i].parent = childrenJson.path.toString
                         children[i].open = false
+                        children[i].isLoaded = false
                         // 进入队列
                         queue.push(children[i])
                     }
