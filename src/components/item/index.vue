@@ -4,13 +4,12 @@
             <li v-for="(item, index) in catalogList.children.values" class="item">
                 <span v-if="item.type=='DIRECTORY'" class="arrow" :class="{'open': item.open}"></span>
                 <span v-if="item.type=='DIRECTORY'" class="floder" @click.prevent="toggle(item, index)">{{item.path.name}}</span>
-                <!--
-                <a v-if="item.type=='FILE'" class="js-Pjax" href="/v2/sh/projects/babyfe/repos/baby-activity-playing-car/browse?branch=master&path=html"><span class="file">{{item.path.name}}</span></a>
-                <a v-if="item.type=='FILE'" href="#"><span class="file" @click="linkToPage(item)">{{item.path.name}}</span></a>                
-                -->
                 <span v-else class="file" @click="linkToPage(item)">{{item.path.name}}</span>  
                 <Loading v-if="item.isLoading"></Loading>
+                <!--
                 <item v-if="!!item.children && item.open" :treeList="item.children" :urlParmas="urlParmas"></item>
+                -->
+                <item v-if="!!item.children && item.open" :treeList="item.children" :urlParmas="urlParmas" :globalTree="copyGlobalTree" :idx="childIdx"></item>
             </li>
         </ul>
     </div>
@@ -18,24 +17,24 @@
 
 <script>
 import 'whatwg-fetch'
-import Pjax from 'pjax'
 import Loading from '../loading/index.vue'
 
 export default {
     name: "item",
-    props: ['treeList', "urlParmas"],
+    props: ['treeList', "urlParmas", "globalTree", "idx"],
     data(){
         return {
             catalogList: this.treeList,
-            // $pjax: new Pjax({ selectors: [".browse-explorer"] })
-            $pjax: null,
+            copyGlobalTree: this.globalTree,
+            childIdx: this.idx
         }
     },
     components: {
         Loading
     },
     mounted(){
-        // this.$pjax = new Pjax({  selectors: ["#root"], cacheBust: true})
+        // http://git.dianpingoa.com/rest/api/2.0/projects/babyfe/repos/baby-activity-playing-car
+        // http://git.dianpingoa.com/rest/api/2.0/projects/babyfe/repos/baby-activity-playing-car/browse/?at=master&start=0&limit=5000
     },
     methods:{
         toggle(item, index){
@@ -76,7 +75,51 @@ export default {
                 item.open = true 
                 //改变loading状态
                 item.isLoading = false
-                //更新目录
+
+                // 跟踪状态
+                let idxArrPre = Array.prototype.map.call(that.childIdx, function(item){
+                    return parseInt(item)
+                })
+                idxArrPre.shift()
+                let copyStatus = that.copyGlobalTree, tempStatus
+                if(idxArrPre.length===1){
+                    copyStatus.children.values[idxArrPre[0]].isLoaded = true
+                    copyStatus.children.values[idxArrPre[0]].open = true
+                }else{
+                    for(let i = 0; i < idxArrPre.length; i++){
+                        if(i==0){
+                            copyStatus = copyStatus.children.values[idxArrPre[i]]
+                        }else if(i == idxArrPre.length - 1){
+                            copyStatus.children.children.values[idxArrPre[i]].isLoaded = true
+                            copyStatus.children.children.values[idxArrPre[i]].open = true
+                        }else{
+                            copyStatus = copyStatus.children.children.values[idxArrPre[i]]
+                        }
+                    }
+                }
+                // 跟踪数据
+                that.childIdx = that.idx + index
+
+                let idxArr = Array.prototype.map.call(that.childIdx, function(item){
+                    return parseInt(item)
+                })
+                idxArr.shift()
+                let copy = that.copyGlobalTree, temp
+                if(idxArr.length===1){
+                    copy.children.values[idxArr[0]].children = childrenJson
+                }else{
+                    for(let i = 0; i < idxArr.length; i++){
+                        if(i==0){
+                            copy = copy.children.values[idxArr[i]]
+                        }else if(i == idxArr.length - 1){
+                            copy.children.children.values[idxArr[i]].children = childrenJson
+                        }else{
+                            copy = copy.children.children.values[idxArr[i]]
+                        }
+                    }
+                }
+                
+                console.log("that.copyGlobalTree", that.copyGlobalTree)
                 that.$set(item, 'children', childrenJson)
             }).catch(function(ex) {
                 console.log('child tree failed', ex)
@@ -86,9 +129,9 @@ export default {
         linkToPage(item){
             let path = item.parent == '' ? item.path.name : `${item.parent}/${item.path.toString}`,
                 url = `${location.href.split('?')[0]}?branch=${this.urlParmas.branch}&path=${path}`
-                //url = `/v2/sh/projects/babyfe/repos/baby-activity-playing-car/browse?branch=${this.urlParmas.branch}&path=${path}`
+            
+            localStorage.setItem(this.urlParmas.storageName, JSON.stringify(this.copyGlobalTree));
             location.href = url
-            // this.$pjax.loadUrl(url)
         }
     }
 }

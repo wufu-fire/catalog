@@ -1,9 +1,8 @@
 <template>
 <div class="catalog-container">
-    <!--
-    <Item></Item>
-    -->
-    <Item v-if="!!treeList" class="tree" :treeList="treeList" :urlParmas="urlParmas"></Item>
+    <div class="btn" @click="deleteCache">清除缓存</div>
+    <div class="btn" @click="showCache">显示缓存</div>
+    <Item v-if="!!treeList" class="tree" :treeList="treeList" :urlParmas="urlParmas" :globalTree="treeList" :idx="idx"></Item>
 </div>
 </template>
 
@@ -19,16 +18,15 @@ export default {
     data(){
         return{
             treeList: null,
+            // globalTree: null,
+            idx: "0",
             urlParmas: {
                 dynamicUrl: location.href.split('?')[0].split('/').slice(5,10).join('/'),  //接口url中动态部分
                 path: urlParams.path,
                 branch: urlParams.branch || "master",
                 host: "//git.dianpingoa.com/rest/api/2.0/",
+                storageName: location.href.split('?')[0].split('/')[8]+'~'+(urlParams.branch || "master")
             },
-            json: '',
-            cleanList: [{
-
-            }],
         }
     },
     components: {
@@ -39,8 +37,14 @@ export default {
     },
     methods: {
         init(){
-            this.getFirstList()
-            // this.getGitList()
+            localStorage.getItem(this.urlParmas.storageName) == "null" ? localStorage.removeItem(this.urlParmas.storageName) : ""
+            !!localStorage.getItem(this.urlParmas.storageName) ? this.treeList = JSON.parse(localStorage.getItem(this.urlParmas.storageName)) : this.getFirstList()
+        },
+        deleteCache(){
+            localStorage.removeItem(this.urlParmas.storageName)
+        },
+        showCache(){
+            console.log(JSON.parse(localStorage.getItem(this.urlParmas.storageName)))
         },
         getFirstList: async function(){
             let rootObj = {},
@@ -66,9 +70,12 @@ export default {
             }
 
             childrenJson.children.values = arrDirectroy.concat(arrFile)
-
+            // 跟踪数据
+            this.globalTree = childrenJson
+            // 
             this.treeList = childrenJson
         },
+        // 废弃掉
         /*
         * 广度遍历，获取每个数据
         * rootObj为默认根节点，里面参数为初始值
@@ -140,7 +147,7 @@ export default {
                 }   
             }
             console.log("rootObj", rootObj)
-            this.treeList = rootObj
+            // this.treeList = rootObj
         } 
     }
 }
