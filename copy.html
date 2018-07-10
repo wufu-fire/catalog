@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Resizeable</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <!--     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"> -->
+    <style>
+        .ui-widget-content {
+            position: fixed;
+            top: 100px;
+            left: 100px;
+        }
+
+        .bars {
+            height: 100%;
+            width: 10px;
+            background: red;
+            float: right;
+        }
+
+        .ui-widget-header {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="resizeable" class="ui-widget-content" style="border: 1px solid red; width: 400px; height: 300px;">
+        <h3 class="ui-widget-header">Resizable</h3>
+        <div class="bars"></div>
+    </div>
+    <script type="text/javascript">
+        /*
+        * jQuery.Resize by Own
+        * Date:2014.01.08
+        */
+        $(function () {
+            //绑定需要拖拽改变大小的元素对象
+            bindResize(document.getElementById('resizeable'));
+        });
+        function bindResize(el) {
+            //初始化参数
+            var els = el.style,
+                //鼠标的 X 和 Y 轴坐标
+                x = y = 0;
+            //鼠标按下事件
+            $(el).mousedown(function (e) {
+                //按下元素后，计算当前鼠标与对象计算后的坐标
+                x = e.clientX - el.offsetWidth,
+                    y = e.clientY - el.offsetHeight;
+                //在支持 setCapture 做些东东
+                el.setCapture ? (
+                    //捕捉焦点
+                    el.setCapture(),
+                    //设置事件
+                    el.onmousemove = function (ev) {
+                        mouseMove(ev || event)
+                    },
+                    el.onmouseup = mouseUp
+                ) : (
+                        //绑定事件
+                        $(document).bind("mousemove", mouseMove).bind("mouseup", mouseUp)
+                    )
+                //防止默认事件发生
+                e.preventDefault()
+            });
+            //移动事件
+            function mouseMove(e) {
+                //运算中...
+                els.width = e.clientX - x + 'px',
+                    els.height = e.clientY - y + 'px'
+            }
+            //停止事件
+            function mouseUp() {
+                //在支持 releaseCapture 做些东东
+                el.releaseCapture ? (
+                    //释放焦点
+                    el.releaseCapture(),
+                    //移除事件
+                    el.onmousemove = el.onmouseup = null
+                ) : (
+                        //卸载事件
+                        $(document).unbind("mousemove", mouseMove).unbind("mouseup", mouseUp)
+                    )
+            }
+        }
+    </script>
+</body>
+
+</html>
