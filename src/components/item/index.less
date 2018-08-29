@@ -1,11 +1,10 @@
-.layer{
+.layer {
     font-size: 16px;
-
-    .item{
+    .item {
         position: relative;
         padding-left: 24px;
     }
-    .arrow{
+    .arrow {
         box-sizing: border-box;
         position: absolute;
         left: 0;
@@ -14,8 +13,7 @@
         line-height: 24px;
         display: inline-block;
         vertical-align: top;
-
-        &::after{
+        &::after {
             content: "\25BE";
             transform: rotate(-90deg);
             width: 24px;
@@ -24,33 +22,33 @@
             display: inline-block;
             vertical-align: top;
         }
-        &.open{
-            &::after{
+        &.open {
+            &::after {
                 transform: rotate(0deg);
             }
         }
     }
-    .floder{
-        display: block;
+    .floder {
+        display: inline-block;
+        white-space: nowrap;
         line-height: 20px;
         padding-left: 26px;
         background: url(../../assets/imgs/folder.png) top left no-repeat;
         background-size: contain;
         margin: 5px 0;
-
-        &:hover{
+        &:hover {
             background-color: #cdcdcd;
         }
     }
-    .file{
-        display: block;
+    .file {
+        display: inline-block;
+        white-space: nowrap;
         line-height: 20px;
         padding-left: 24px;
         background: url(../../assets/imgs/file.png) top left no-repeat;
         background-size: contain;
         margin: 5px 0;
-
-        &:hover{
+        &:hover {
             background-color: #cdcdcd;
         }
     }
