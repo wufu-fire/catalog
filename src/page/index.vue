@@ -1,5 +1,6 @@
 <template>
 <div class="catalog-container">
+    <div id="watch" @click="watchUrl"></div>
     <div id="resizeable" ref="tree" class="tree" :style="styleObject">
         <div class="toggle">
             <div v-if="!!userInfo" class="user-info">
@@ -37,21 +38,18 @@ export default {
       pageUrl: location.href,
       loadHtml: true,
       urlParmas: {
-        dynamicUrl: location.href
-          .split("?")[0]
-          .split("/")
-          .slice(5, 10)
-          .join("/"), //接口url中动态部分
+        dynamicUrl:
+          location.href
+            .split("?")[0]
+            .split("/")
+            .slice(5, 9)
+            .join("/") + "/browse", //接口url中动态部分
         path: urlParams.path,
         branch: urlParams.branch || "master",
         host:
           location.href.split("?")[0].split("/")[3] == "v2"
             ? "//git.dianpingoa.com/rest/api/2.0/"
-            : "//git.dianpingoa.com/rest/api/1.0/",
-        storageName:
-          location.href.split("?")[0].split("/")[8] +
-          "~" +
-          (urlParams.branch || "master")
+            : "//git.dianpingoa.com/rest/api/1.0/"
       },
       ownerUrl: location.href
         .split("?")[0]
@@ -73,10 +71,19 @@ export default {
     this.init();
   },
   methods: {
+    watchUrl() {
+      let url = location.href,
+        str = "browse";
+      if (url.includes(str)) {
+        this.openClose(1);
+      } else {
+        this.openClose(0);
+      }
+    },
     // 初始化
     init() {
       // 监听页面url
-      this.wathcUrl();
+      //   this.wathcUrl();
       this.getFirstList();
       // 删除原节点
       let child = document.getElementById("root");
@@ -98,14 +105,10 @@ export default {
           if (typeof history.onpushstate == "function") {
             history.onpushstate({ state: state });
           }
-          // ... whatever else you want to do
-          // maybe call onhashchange e.handler
           return pushState.apply(history, arguments);
         };
       })(window.history);
-      history.onpushstate = function(e) {
-        alert(window.location.href);
-      };
+      history.onpushstate = function(e) {};
     },
     // 加载页面
     iframeLoad() {
@@ -118,7 +121,8 @@ export default {
                 var pushState = history.pushState;
                 history.pushState = function () {
                     pushState.apply(history, arguments);
-                    window.parent.history.pushState(null, null, location.href)
+                    window.parent.history.pushState(null, null, location.href);
+                    window.parent.document.getElementById('watch').click();
                 };
             `;
       let inlineScript = document.createTextNode(text);
@@ -147,7 +151,9 @@ export default {
       });
 
       let childrenJson = await childrenRes.json();
-
+      console.log("url", this.urlParmas.dynamicUrl);
+      //git.dianpingoa.com/rest/api/2.0/projects/F2EC/repos/util-m-share/commits/?at=master&start=0&limit=5000
+      //git.dianpingoa.com/rest/api/2.0/projects/F2EC/repos/util-m-share/browse/?at=master&start=0&limit=5000
       originArr = childrenJson.children.values;
 
       for (let i = 0; i < originArr.length; i++) {
