@@ -3,16 +3,58 @@
 
 <head>
     <style>
-        button {
-            height: 30px;
-            width: 30px;
-            outline: none;
+        .pop-contaner {
+            width: 50px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chooseBtn {
+            display: none;
+        }
+
+        .choose-label {
+            box-shadow: #ccc 0px 0px 0px 1px;
+            width: 40px;
+            height: 20px;
+            display: inline-block;
+            border-radius: 20px;
+            position: relative;
+            background-color: #bdbdbd;
+            overflow: hidden;
+        }
+
+        .choose-label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            border-radius: 20px;
+            background-color: #fff;
+            z-index: 20;
+            -webkit-transition: all 0.5s;
+            transition: all 0.5s;
+        }
+
+        .chooseBtn:checked+label.choose-label:before {
+            left: 20px;
+        }
+
+        .chooseBtn:checked+label.choose-label {
+            background-color: #0e77ca;
         }
     </style>
 </head>
 
 <body>
-    <button id="changeColor"></button>
+    <div class="pop-contaner">
+        <input type="checkbox" name="sex" id="male" class="chooseBtn" checked/>
+        <label for="male" class="choose-label" id="toggle"></label>
+    </div>
     <script src="popup.js"></script>
 </body>
 

@@ -6,7 +6,7 @@
                 <span v-if="item.type=='DIRECTORY'" class="floder" @click.prevent="toggle(item, index)">{{item.path.name}}</span>
                 <span v-else class="file" @click="linkToPage(item)">{{item.path.name}}</span>  
                 <Loading v-if="item.isLoading&&false"></Loading>
-                <item v-if="!!item.children && item.open" :treeList="item.children" :urlParmas="urlParmas" :setPageUrl="setPageUrl" :iframeLoad="iframeLoad"></item>
+                <item v-if="!!item.children && item.open" :treeList="item.children" :urlParmas="urlParmas" :setPageUrl="setPageUrl" :iframeLoad="iframeLoad" :isV1="isV1"></item>
             </li>
         </ul>
     </div>
@@ -87,9 +87,17 @@ export default {
           item.parent == ""
             ? item.path.name
             : `${item.parent}/${item.path.toString}`,
+        url;
+      if (location.href.includes("v1")) {
+        url = `http://${location.href
+          .split("/")
+          .slice(2, 10)
+          .join("/")}/${path}?at=${this.urlParmas.branch}&auto=false`;
+      } else {
         url = `${location.href.split("?")[0]}?branch=${
           this.urlParmas.branch
         }&path=${path}`;
+      }
       this.setPageUrl(url);
       window.history.pushState(null, null, url);
     }

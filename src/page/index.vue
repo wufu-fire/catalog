@@ -1,7 +1,7 @@
 <template>
 <div class="catalog-container">
     <div id="watch" @click="watchUrl"></div>
-    <div id="resizeable" ref="tree" class="tree" :style="styleObject">
+    <div id="resizeable" ref="tree" class="tree" :style="styleObject" :class="{'Hidden': isHidden}">
         <div class="toggle">
             <div v-if="!!userInfo" class="user-info">
                 <div>author:{{userInfo.owner.name}}</div>
@@ -9,10 +9,10 @@
             </div>
             <div v-if="!startCollapse" class="close-btn" @click="openClose(0)"></div>
         </div>
-        <Item v-if="!!treeList" :treeList="treeList" :urlParmas="urlParmas" :setPageUrl="setPageUrl" :iframeLoad="iframeLoad"></Item>
+        <Item v-if="!!treeList && !!urlParmas" :treeList="treeList" :urlParmas="urlParmas" :setPageUrl="setPageUrl" :iframeLoad="iframeLoad"></Item>
     </div>
-    <div id="bars" class="bar"></div>
-    <div v-if="startCollapse" class="open-btn-wrapper">
+    <div id="bars" class="bar" :class="{'Hidden': isHidden}"></div>
+    <div v-if="startCollapse" class="open-btn-wrapper" :class="{'Hidden': isHidden}">
         <div class="open-btn" @click="openClose(1)"></div>
     </div>
     <div class='catalog-content'>
@@ -37,7 +37,70 @@ export default {
       treeList: null,
       pageUrl: location.href,
       loadHtml: true,
-      urlParmas: {
+      urlParmas: null,
+      ownerUrl: null,
+      userInfo: null,
+      styleObject: {
+        width: "220px"
+      },
+      isDrag: false,
+      startCollapse: false,
+      isHidden: false
+    };
+  },
+  components: {
+    Item
+  },
+  mounted() {
+    console.log("ffff", localStorage.getItem("catalogIsPrevent"));
+    let that = this;
+    // 删除原节点
+    let child = document.getElementById("root");
+    // 判断是v1还是v2版本
+    !!child ? child.parentNode.removeChild(child) : "";
+    //拖动
+    this.draggleRize(
+      document.getElementById("bars"),
+      document.getElementById("resizeable")
+    );
+    // 插入iframe
+    this.insertJsForIframe();
+    if (location.href.includes("browse")) {
+      this.initData();
+      this.getFirstList();
+    } else {
+      this.isHidden = true;
+    }
+    chrome.extension.onMessage.addListener(function(
+      request,
+      sender,
+      sendResponse
+    ) {
+      that.isHidden = !request.isSelected;
+      localStorage.setItem("catalogIsPrevent", request.isSelected);
+      // console.log("request", request);
+      // sendResponse("success");
+    });
+  },
+  methods: {
+    // 监听iframe内部的url
+    watchUrl() {
+      let url = location.href;
+      if (url.includes("browse")) {
+        // 监听为浏览code页面
+        this.initData();
+        this.getFirstList();
+        this.openClose(1);
+        this.isHidden = false;
+      } else {
+        // 监听当不是code浏览页面
+        this.openClose(0);
+        this.isHidden = true;
+      }
+    },
+    // 初始化参数
+    initData() {
+      this.urlParmas = {
         dynamicUrl:
           location.href
             .split("?")[0]
@@ -50,65 +113,12 @@ export default {
           location.href.split("?")[0].split("/")[3] == "v2"
             ? "//git.dianpingoa.com/rest/api/2.0/"
             : "//git.dianpingoa.com/rest/api/1.0/"
-      },
-      ownerUrl: location.href
+      };
+      this.ownerUrl = location.href
         .split("?")[0]
         .split("/")
         .slice(5, 9)
-        .join("/"),
-      userInfo: null,
-      styleObject: {
-        width: "220px"
-      },
-      isDrag: false,
-      startCollapse: false
-    };
-  },
-  components: {
-    Item
-  },
-  mounted() {
-    this.init();
-  },
-  methods: {
-    watchUrl() {
-      let url = location.href,
-        str = "browse";
-      if (url.includes(str)) {
-        this.openClose(1);
-      } else {
-        this.openClose(0);
-      }
-    },
-    // 初始化
-    init() {
-      // 监听页面url
-      //   this.wathcUrl();
-      this.getFirstList();
-      // 删除原节点
-      let child = document.getElementById("root");
-      // 判断是v1还是v2版本
-      !!child ? child.parentNode.removeChild(child) : "";
-      //拖动
-      this.draggleRize(
-        document.getElementById("bars"),
-        document.getElementById("resizeable")
-      );
-      // 插入iframe
-      this.insertJsForIframe();
-    },
-    // 监听页面url，收起树形导航
-    wathcUrl() {
-      (function(history) {
-        var pushState = history.pushState;
-        history.pushState = function(state) {
-          if (typeof history.onpushstate == "function") {
-            history.onpushstate({ state: state });
-          }
-          return pushState.apply(history, arguments);
-        };
-      })(window.history);
-      history.onpushstate = function(e) {};
+        .join("/");
     },
     // 加载页面
     iframeLoad() {
@@ -151,9 +161,6 @@ export default {
       });
 
       let childrenJson = await childrenRes.json();
-      console.log("url", this.urlParmas.dynamicUrl);
-      //git.dianpingoa.com/rest/api/2.0/projects/F2EC/repos/util-m-share/commits/?at=master&start=0&limit=5000
-      //git.dianpingoa.com/rest/api/2.0/projects/F2EC/repos/util-m-share/browse/?at=master&start=0&limit=5000
       originArr = childrenJson.children.values;
 
       for (let i = 0; i < originArr.length; i++) {

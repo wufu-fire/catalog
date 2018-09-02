@@ -97,3 +97,6 @@ getGitList: async function(){
 
 
 ### 直接找到监听iframe内部url变化的方法
+v2: http://git.dianpingoa.com/v2/sh/projects/babyfe/repos/baby-activity-playing-car/browse?branch=lightmerge&path=html/change-date.html
+
+v1: http://git.dianpingoa.com/v1/sh/projects/babyfe/repos/baby-activity-playing-car/browse/html/change-date.html?at=master&auto=false
