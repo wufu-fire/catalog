@@ -49,5 +49,8 @@
         "64": "images/catalog64.png",
         "128": "images/catalog128.png"
     },
-    "manifest_version": 2
+    "manifest_version": 2,
+    "web_accessible_resources": [
+        "inject.js"
+    ]
 }

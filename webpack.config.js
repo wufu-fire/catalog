@@ -107,6 +107,7 @@ if (env == "dev") {
 module.exports = {
     entry: {
         'index': ['./src/index.js'],
+        'lx': ['./src/lx.js'],
     },
     output: {
         filename: '[name].js',

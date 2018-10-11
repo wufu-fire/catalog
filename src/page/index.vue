@@ -29,7 +29,6 @@
 import queryString from "query-string";
 import "whatwg-fetch";
 import Item from "../components/item/index.vue";
-
 const urlParams = queryString.parse(location.search);
 export default {
   data() {
@@ -52,7 +51,6 @@ export default {
     Item
   },
   mounted() {
-    console.log("ffff", localStorage.getItem("catalogIsPrevent"));
     let that = this;
     // 删除原节点
     let child = document.getElementById("root");
@@ -78,8 +76,6 @@ export default {
     ) {
       that.isHidden = !request.isSelected;
       localStorage.setItem("catalogIsPrevent", request.isSelected);
-      // console.log("request", request);
-      // sendResponse("success");
     });
   },
   methods: {
